@@ -33,45 +33,24 @@ class ShoeProductAPI {
         }
     }
 
-    // addModel = async (Data: any,Pictures:any) => {
-    //     try {
-    //         const listData = {
-    //             code: Data.code,
-    //             name: Data.name,
-    //             price: Data.price,
-    //             desc: Data.desc,
-    //             style_id: Data.style_id,
-    //             type_id: Data.type_id,
-    //             brand_id: Data.brand_id,
-    //             color_ids: Data.color_ids,
-    //             sex_id: Data.sex_id,
-    //             material_id: Data.material_id
-    //         };
-    //         const formData = new FormData();
-    //         console.log(Pictures)
-
-    //         formData.append('shoesAddForm', JSON.stringify(listData));
-    //         formData.append('images', Pictures);
-
-    //         formData.forEach((value, key) => {
-    //             console.log(key, value);
-    //         });
-    //         const config = {
-    //             headers: {
-    //                 'content-type': 'multipart/form-data; charset=utf-8; boundary="------";'
-    //             }
-    //         }
-    //         const response = await axiosClient.post(this.url, formData, config);
-    //         // console.log(response)
-    //         return response.data;
-    //     } catch (error) {
-    //         // Xử lý lỗi ở đây
-    //         console.error("Error adding food option:", error);
-    //         throw error; // Nếu bạn muốn chuyển lỗi ra ngoại vi để xử lý ở nơi khác
-    //     }
-    // }
-
+    addProduct = async (data: any) => {
+        console.log(data)
+        try {
+            const response = await axiosClient.post(this.url, {
+                size_id: data.size_id,
+                price: data.price,
+                quantity: data.quantity,
+                shoes_id: data.shoes_id,
+                color_id: data.color_id
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error adding shoes config:", error);
+            throw error;
+        }
+    }
     deleteData = async (idList: number[]) => {
+        console.log(idList)
         try {
             const response = await axiosClient.delete(this.url, { data: { idList } });
             return response.data;
