@@ -61,6 +61,7 @@ import ReactSelect from "react-select";
 import shoeConfigAPI from "@/apis/shoeConfigAPI";
 import OptionTypeBase from "react-select";
 import MultiImageUpload from "@/components/muti-image-upload";
+import shoeProductAPI from "@/apis/shoeProductAPI";
 
 export function ShoeProductsTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -85,37 +86,29 @@ export function ShoeProductsTable() {
 
   // State post data
   const [postData, setPostData] = useState({
-    code: "",
-    name: "",
     price: "",
-    style_id: "",
-    desc: "",
-    type_id: "",
-    brand_id: "",
-    material_id: "",
-    sex_id: "",
-    color_ids: [],
-    pictures: [] as File[],
+    quantity: "",
+    shoes_id: "",
+    size_id: "",
+    color_id:"",
   });
 
   // Thêm state cho trang hiện tại
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const [rowsPerPage] = React.useState<number>(8); // Số lượng hàng mỗi trang
-  const [filteredData, setFilteredData] = React.useState<ShoeProductsTypes[]>([]);
+  const [filteredData, setFilteredData] = React.useState<ShoeProductsTypes[]>(
+    []
+  );
   const [isLoading, setIsLoading] = React.useState(true);
   const [apiData, setApiData] = React.useState<ShoeProductsTypes[]>([]);
 
-  const [brandOptions, setBrandOptions] = useState([]);
-  const [typeOptions, setTypeOptions] = useState([]);
-  const [styleOptions, setStyleOptions] = useState([]);
-  const [materialOptions, setMaterialOptions] = useState([]);
+  const [sizeOptions, setSizeOptions] = useState([]);
+  const [shoesOptions, setShoesOptions] = useState([]);
   const [colorOptions, setColorOptions] = useState([]);
-
-  const [pictures, setPictures] = useState<File[]>([]);
 
   const getData = async () => {
     try {
-      const res = await shoeModelAPI.getModel(filterData);
+      const res = await shoeProductAPI.getProduct(filterData);
       if (res) {
         const data = res.data;
         setApiData(data);
@@ -131,58 +124,40 @@ export function ShoeProductsTable() {
   const fetchOptions = async () => {
     try {
       const colors = await shoeConfigAPI.getColorsConfig();
+      const sizes = await shoeConfigAPI.getSizesConfig();
+      const shoes = await shoeModelAPI.getModel(filterData);
       // const sexes = await shoeConfigAPI.get();
 
       setColorOptions(colors);
+      setSizeOptions(sizes);
+      setShoesOptions(shoes.data);
     } catch (error) {
       console.error("Error fetching options:", error);
     }
   };
-  const handleValueStyleChange = (value: string) => {
-    setPostData({ ...postData, style_id: value });
+  const handleValueSizeChange = (value: string) => {
+    setPostData({ ...postData, size_id: value });
   };
-  const handleColorChange = (
-    selectedOptions: OptionTypeBase | OptionTypeBase[] | null
-  ): void => {
-    if (selectedOptions) {
-      const colorIds = Array.isArray(selectedOptions)
-        ? selectedOptions.map((option: OptionTypeBase) => option.value)
-        : [selectedOptions.value];
-      setPostData({ ...postData, color_ids: colorIds });
-    } else {
-      setPostData((prevData) => ({
-        ...prevData,
-        color_ids: [],
-      }));
-    }
+  const handleValueShoesChange = (value: string) => {
+    setPostData({ ...postData, shoes_id: value });
   };
-  const colorData: ColorOption[] = colorOptions
-    ? colorOptions.map((option) => ({
-        value: option.id.toString(), // Đảm bảo rằng giá trị là chuỗi
-        label: option.code,
-      }))
-    : [];
-
+  const handleValueColorChange = (value: string) => {
+    setPostData({ ...postData, color_id: value });
+  };
   //Them du lieu
-  const handleAddModel = async () => {
+  const handleAddProduct = async () => {
     try {
-      await shoeModelAPI.addModel(postData, pictures);
+      await shoeProductAPI.addProduct(postData);
       getData(); // Refresh the color list
       toast.success("Thêm mới thành công!");
 
       // Reset form sau khi thêm thành công
       setPostData({
-        code: "",
-        name: "",
         price: "",
-        style_id: "",
-        desc: "",
-        type_id: "",
-        brand_id: "",
-        material_id: "",
-        sex_id: "",
-        color_ids: [],
-        pictures: [] as File[],
+        quantity: "",
+        shoes_id: "",
+        size_id: "",
+        color_id: "",
       });
     } catch (error) {
       console.error("Error adding brand:", error);
@@ -193,7 +168,7 @@ export function ShoeProductsTable() {
   const handleDeleteData = async (id: number) => {
     // console.log(id)
     try {
-      await shoeModelAPI.deleteData([id]);
+      await shoeProductAPI.deleteData([id]);
       getData(); // Refresh list
       toast.success("Xóa thành công!");
     } catch (error) {
@@ -220,10 +195,17 @@ export function ShoeProductsTable() {
       },
     },
     {
-      accessorKey: "name",
-      header: "Mẫu",
+      accessorKey: "shoes_code",
+      header: "Code",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("name")}</div>
+        <div className="capitalize">{row.getValue("shoes_code")}</div>
+      ),
+    },
+    {
+      accessorKey: "shoes_name",
+      header: "Tên",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("shoes_name")}</div>
       ),
     },
     {
@@ -241,10 +223,24 @@ export function ShoeProductsTable() {
       ),
     },
     {
-      accessorKey: "code",
-      header: "Code",
+      accessorKey: "size",
+      header: "Size",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("code")}</div>
+        <div className="capitalize">{row.getValue("size")}</div>
+      ),
+    },
+    {
+      accessorKey: "color",
+      header: "Màu Sắc",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("color")}</div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Trạng Thái",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("status")}</div>
       ),
     },
     {
@@ -350,51 +346,55 @@ export function ShoeProductsTable() {
                 <form className="w-full flex flex-col items-center">
                   <div className="flex gap-5 justify-center w-full">
                     <div className="flex flex-col w-[35%] gap-5">
-                      <Input
-                        type="text"
-                        placeholder="Code"
-                        name="code"
-                        value={postData.code}
-                        onChange={(e) =>
-                          setPostData({ ...postData, code: e.target.value })
-                        }
-                      />
-                      <Input
-                        type="text"
-                        placeholder="Tên"
-                        name="name"
-                        value={postData.name}
-                        onChange={(e) =>
-                          setPostData({ ...postData, name: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="flex flex-col w-[35%] gap-5">
-                      <Select onValueChange={handleValueStyleChange}>
+                      <Select onValueChange={handleValueSizeChange}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Dáng Giày" />
+                          <SelectValue placeholder="Size" />
                         </SelectTrigger>
                         <SelectContent>
-                          {styleOptions.map((option) => (
+                          {sizeOptions.map((option) => (
                             // eslint-disable-next-line react/jsx-key
                             <SelectItem value={`${option.id}`}>
-                              {option.code}
+                              {option.desc}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <ReactSelect
-                        isMulti
-                        onChange={handleColorChange}
-                        options={colorData}
-                        placeholder="Chọn Màu"
-                        className="w-full"
-                      />
+                      <Select onValueChange={handleValueColorChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Màu Sắc" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {colorOptions.map((option) => (
+                            // eslint-disable-next-line react/jsx-key
+                            <SelectItem value={`${option.id}`}>
+                              {option.desc}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select onValueChange={handleValueShoesChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Mẫu Giày" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {shoesOptions.map((option) => (
+                            // eslint-disable-next-line react/jsx-key
+                            <SelectItem value={`${option.id}`}>
+                              {option.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div className="flex flex-col gap-3">
-                      <MultiImageUpload
-                        pictures={pictures}
-                        setPictures={setPictures}
+                    <div className="flex flex-col w-[35%] gap-5">
+                      <Input
+                        type="number"
+                        placeholder="Số Lượng"
+                        name="quantity"
+                        value={postData.quantity}
+                        onChange={(e) =>
+                          setPostData({ ...postData, quantity: e.target.value })
+                        }
                       />
                       <Input
                         type="text"
@@ -405,19 +405,10 @@ export function ShoeProductsTable() {
                           setPostData({ ...postData, price: e.target.value })
                         }
                       />
-                      <Input
-                        type="text"
-                        placeholder="Chú thích"
-                        name="desc"
-                        value={postData.desc}
-                        onChange={(e) =>
-                          setPostData({ ...postData, desc: e.target.value })
-                        }
-                      />
                     </div>
                   </div>
                   <Button
-                    onClick={handleAddModel}
+                    onClick={handleAddProduct}
                     type="button"
                     className="w-[25%] mt-5"
                   >
