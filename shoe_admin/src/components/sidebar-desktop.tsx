@@ -9,6 +9,7 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { LogOut, MoreHorizontal, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from '@/components/theme-toggle';
 
 interface SidebarDesktopProps {
   sidebarItems: SidebarItems;
