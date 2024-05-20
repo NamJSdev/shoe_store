@@ -12,6 +12,7 @@ import {
   ShoppingBasket,
   GalleryThumbnails,
   FileSliders,
+  Receipt
 } from "lucide-react";
 import { SidebarDesktop } from "./sidebar-desktop";
 import { SidebarItems } from "@/types";
@@ -26,6 +27,11 @@ const sidebarItems: SidebarItems = {
     { label: "Thống Kê", href: "/", icon: Home },
     // { label: "Đơn hàng", href: "/item/notifications", icon: ShoppingBasket },
     // { label: "Messages", href: "/item/messages", icon: Mail },
+    {
+      href: "/shoeProducts",
+      icon: Receipt,
+      label: "Sản Phẩm",
+    },
     {
       href: "/shoeModels",
       icon: GalleryThumbnails,
@@ -48,13 +54,8 @@ const sidebarItems: SidebarItems = {
     // },
   ],
   extras: (
-    <div className="flex flex-col gap-2 mt-7">
-      <SidebarButton
-        className="w-full justify-center text-white"
-        variant="default"
-      >
-      <ThemeToggle/>
-      </SidebarButton>
+    <div className="flex flex-col absolute left-0 bottom-20 justify-center w-full">
+      <ThemeToggle />
     </div>
   ),
 };
