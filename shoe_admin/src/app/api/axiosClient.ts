@@ -2,12 +2,19 @@ import axios from "axios";
 
 const axiosClient = axios.create({
     baseURL: 'http://127.0.0.1:8099',
+    withCredentials: true, // Cho phép gửi cookies cùng với yêu cầu nếu cần
 });
 
-// axiosClient.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('jwtAdmin')}`
+let sessionToken = '';
+
+export const setSessionToken = (token: string) => {
+    sessionToken = token;
+};
+
 axiosClient.interceptors.request.use(async (config: any) => {
     config.headers = {
         'Content-type': 'application/json',
+        'Authorization': `Bearer ${sessionToken}`,
         ...config.headers,
     }
     config.data

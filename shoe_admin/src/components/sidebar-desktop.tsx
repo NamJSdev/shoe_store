@@ -1,5 +1,3 @@
-'use client';
-
 import { SidebarButton } from './sidebar-button';
 import { SidebarItems } from '@/types';
 import Link from 'next/link';
@@ -9,19 +7,28 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { LogOut, MoreHorizontal, Settings } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import ThemeToggle from '@/components/theme-toggle';
+import {useRouter} from "next/navigation";
+import { toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 
 interface SidebarDesktopProps {
   sidebarItems: SidebarItems;
 }
 
 export function SidebarDesktop(props: SidebarDesktopProps) {
+  const router = useRouter();
   const pathname = usePathname();
+  const logout = () => {
+    // Khi người dùng đăng xuất
+    Cookies.remove('sessionToken');
+    router.push("/login");
+    toast.success("Đăng xuất tài khoản thành công !")
+}
 
   return (
     <aside className='w-[270px] max-w-xs h-screen fixed left-0 top-0 z-40 border-r'>
       <div className='h-full px-3 py-4'>
-        <h3 className='mx-3 text-lg font-semibold text-foreground'>Shoe Store</h3>
+        <h3 className='mx-3 text-lg font-semibold text-foreground'><Link href="/">Shoe Store Official</Link></h3>
         <div className='mt-5'>
           <div className='flex flex-col gap-1 w-full'>
             {props.sidebarItems.links.map((link, index) => (
@@ -46,9 +53,9 @@ export function SidebarDesktop(props: SidebarDesktopProps) {
                     <div className='flex gap-2'>
                       <Avatar className='h-5 w-5'>
                         <AvatarImage src='https://github.com/max-programming.png' />
-                        <AvatarFallback>Dũng Mạc</AvatarFallback>
+                        <AvatarFallback>Admin</AvatarFallback>
                       </Avatar>
-                      <span>Dũng Mạc</span>
+                      <span>Admin</span>
                     </div>
                     <MoreHorizontal size={20} />
                   </div>
@@ -57,11 +64,11 @@ export function SidebarDesktop(props: SidebarDesktopProps) {
               <PopoverContent className='mb-2 w-56 p-3 rounded-[1rem]'>
                 <div className='space-y-1'>
                   <Link href='/'>
-                    <SidebarButton size='sm' icon={Settings} className='w-full'>
+                    {/* <SidebarButton size='sm' icon={Settings} className='w-full'>
                       Cài Đặt
-                    </SidebarButton>
+                    </SidebarButton> */}
                   </Link>
-                  <SidebarButton size='sm' icon={LogOut} className='w-full'>
+                  <SidebarButton onClick={logout} size='sm' icon={LogOut} className='w-full'>
                     Đăng Xuất
                   </SidebarButton>
                 </div>

@@ -6,7 +6,7 @@ class ShoeConfigAPI {
     getConfig = async (code: string) => {
         try {
             const formData = new FormData();
-
+            
             formData.append('pCode', code);
             const urlParams = new URLSearchParams(formData as any);
             
