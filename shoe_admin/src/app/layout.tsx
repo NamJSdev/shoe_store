@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Suspense } from "react";
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import AppProvider from "@/app/AppProvider";
+import { cookies } from "next/headers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,6 +20,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = cookies()
+  const sessionToken = cookieStore.get('sessionToken')
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
@@ -27,8 +31,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Sidebar />
-          <main className="mx-5 mt-16 sm:ml-[300px] sm:mt-3">{children}</main>
+          <AppProvider inititalSessionToken={sessionToken?.value}>
+            <main>{children}</main>
+          </AppProvider>
           <ToastContainer
             position="top-right"
             autoClose={5000}

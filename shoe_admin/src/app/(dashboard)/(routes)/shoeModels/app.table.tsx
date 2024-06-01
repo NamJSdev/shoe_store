@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { toast } from "react-toastify";
@@ -18,9 +18,11 @@ import {
 } from "@tanstack/react-table";
 import {
   faEye,
+  faFilter,
   faPenToSquare,
   faPlus,
   faTrash,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   Select,
@@ -45,7 +47,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Input } from "@/components/ui/input";
 import { ColorOption, ShoeModelsTypes } from "@/app/types/schemas.d";
-import shoeModelAPI from "@/apis/shoeModelAPI";
+import shoeModelAPI from "@/app/api/shoeModelAPI";
 import {
   Drawer,
   DrawerClose,
@@ -58,9 +60,11 @@ import {
 } from "@/components/ui/drawer";
 import { Textarea } from "@/components/ui/textarea";
 import ReactSelect from "react-select";
-import shoeConfigAPI from "@/apis/shoeConfigAPI";
+import shoeConfigAPI from "@/app/api/shoeConfigAPI";
 import OptionTypeBase from "react-select";
 import MultiImageUpload from "@/components/muti-image-upload";
+import { useAppContext } from "@/app/AppProvider";
+import { setSessionToken } from "@/app/api/axiosClient";
 
 export function ShoeModelTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -117,6 +121,14 @@ export function ShoeModelTable() {
   const [selectedSexId, setSelectedSexId] = useState(null);
   const [pictures, setPictures] = useState<File[]>([]);
 
+  const { sessionToken } = useAppContext();
+
+  useEffect(() => {
+    if (sessionToken) {
+      setSessionToken(sessionToken);
+    }
+  }, [sessionToken]);
+
   const getData = async () => {
     try {
       const res = await shoeModelAPI.getModel(filterData);
@@ -155,15 +167,19 @@ export function ShoeModelTable() {
   };
   const handleValueMaterialChange = (value: string) => {
     setPostData({ ...postData, material_id: value });
+    setFilter({ ...filterData, materialId: value });
   };
   const handleValueTypeChange = (value: string) => {
     setPostData({ ...postData, type_id: value });
+    setFilter({ ...filterData, typeId: value });
   };
   const handleValueBrandChange = (value: string) => {
     setPostData({ ...postData, brand_id: value });
+    setFilter({ ...filterData, brandId: value });
   };
   const handleValueSexChange = (value: string) => {
     setPostData({ ...postData, sex_id: value });
+    setFilter({ ...filterData, sexId: value });
   };
   const handleColorChange = (
     selectedOptions: OptionTypeBase | OptionTypeBase[] | null
@@ -226,6 +242,28 @@ export function ShoeModelTable() {
     }
   };
 
+  // Tìm kiếm dữ liệu
+  const handleSearch = async (value: string) => {
+    setSearchTerm(value);
+    setFilter((prevState) => ({
+      ...prevState,
+      searchValue: value,
+    }));
+    getData();
+  };
+  // Xóa bộ lọc dữ liệu
+  const clearFilter = () => {
+    setFilter({
+      priceFrom: "",
+      priceTo: "",
+      searchValue: "",
+      typeId: "",
+      materialId: "",
+      brandId: "",
+      sexId: "",
+    });
+    getData();
+  };
   React.useEffect(() => {
     getData();
   }, []);
@@ -296,18 +334,163 @@ export function ShoeModelTable() {
         const data = row.original;
         return (
           <>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="mx-3"
-                  // onClick={() => setSelectedFoodId(food.monAnID)}
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} />
-                </Button>
-              </DialogTrigger>
-              {/* <UpDateFoodModal id={selectedFoodId} reloadData={getAllFoods} /> */}
-            </Dialog>
+              {/* Sửa dữ liệu */}
+              <Drawer>
+                <DrawerTrigger asChild>
+                  <Button
+                    // onClick={() => fetchOptions()}
+                    className="mx-3"
+                    variant="secondary"
+                  >
+                    <FontAwesomeIcon icon={faPenToSquare} />
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="h-[75%]">
+                  <div className="mx-auto w-[100%]">
+                    <DrawerHeader>
+                      <DrawerTitle className="text-center">Sửa Dữ Liệu</DrawerTitle>
+                      <DrawerDescription className="text-center">
+                        <i>(Không được để trống)</i>
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <DrawerFooter className="flex flex-col items-center">
+                      <form className="w-full flex flex-col items-center">
+                        <div className="flex gap-5 justify-center w-full">
+                          <div className="flex flex-col w-[35%] gap-5">
+                            <Input
+                              type="text"
+                              placeholder="Code"
+                              name="code"
+                              value={data.code}
+                              onChange={(e) =>
+                                setPostData({ ...postData, code: e.target.value })
+                              }
+                            />
+                            <Input
+                              type="text"
+                              placeholder="Tên"
+                              name="name"
+                              value={data.name}
+                              onChange={(e) =>
+                                setPostData({ ...postData, name: e.target.value })
+                              }
+                            />
+
+                            <Select onValueChange={handleValueSexChange} defaultValue={data.sex}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Giới Tính" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">Nam</SelectItem>
+                                <SelectItem value="2">Nữ</SelectItem>
+                                <SelectItem value="3">Tất Cả</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Select onValueChange={handleValueMaterialChange}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Chất Liệu" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {materialOptions.map((option) => (
+                                  // eslint-disable-next-line react/jsx-key
+                                  <SelectItem value={`${option.id}`}>
+                                    {option.code}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex flex-col w-[35%] gap-5">
+                            <Select onValueChange={handleValueStyleChange}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Dáng Giày" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {styleOptions.map((option) => (
+                                  // eslint-disable-next-line react/jsx-key
+                                  <SelectItem value={`${option.id}`}>
+                                    {option.code}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select onValueChange={handleValueTypeChange}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Loại Giày" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {typeOptions.map((option) => (
+                                  // eslint-disable-next-line react/jsx-key
+                                  <SelectItem value={`${option.id}`}>
+                                    {option.code}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select onValueChange={handleValueBrandChange}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Thương Hiệu" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {brandOptions.map((option) => (
+                                  // eslint-disable-next-line react/jsx-key
+                                  <SelectItem value={`${option.id}`}>
+                                    {option.code}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <ReactSelect
+                              isMulti
+                              onChange={handleColorChange}
+                              options={colorData}
+                              placeholder="Chọn Màu"
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-3">
+                            <MultiImageUpload
+                              pictures={pictures}
+                              setPictures={setPictures}
+                            />
+                            <Input
+                              type="text"
+                              placeholder="Giá"
+                              name="price"
+                              value={postData.price}
+                              onChange={(e) =>
+                                setPostData({ ...postData, price: e.target.value })
+                              }
+                            />
+                            <Input
+                              type="text"
+                              placeholder="Chú thích"
+                              name="desc"
+                              value={postData.desc}
+                              onChange={(e) =>
+                                setPostData({ ...postData, desc: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Button
+                          onClick={handleAddModel}
+                          type="button"
+                          className="w-[25%] mt-5"
+                        >
+                          Thêm
+                        </Button>
+                      </form>
+                      <DrawerClose asChild>
+                        <Button className="w-[25%]" variant="outline">
+                          Thoát
+                        </Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </div>
+                </DrawerContent>
+              </Drawer>
+              {/* End */}
             <Button
               variant="destructive"
               onClick={() => handleDeleteData(data.id)}
@@ -343,10 +526,11 @@ export function ShoeModelTable() {
     <div className="w-full">
       <div className="flex items-center py-4">
         <Input
+          type="text"
           placeholder="Tìm kiếm..."
           value={searchTerm}
           onChange={(event) => {
-            // handleSearch(event.target.value);
+            handleSearch(event.target.value);
             setCurrentPage(1);
           }}
           className="max-w-sm"
@@ -356,7 +540,7 @@ export function ShoeModelTable() {
           <DrawerTrigger className="w-full" asChild>
             <Button
               onClick={() => fetchOptions()}
-              className="float-right w-[10%]"
+              className="float-right w-[10%] ml-3"
               variant="outline"
             >
               <FontAwesomeIcon className="mr-1 size-4" icon={faPlus} />
@@ -509,13 +693,138 @@ export function ShoeModelTable() {
           </DrawerContent>
         </Drawer>
         {/* End */}
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="secondary" className="ml-4">
-              <Link href="/#">Bộ Lọc</Link>
+        {/* Bộ Lọc */}
+        <Drawer>
+          <DrawerTrigger className="w-full" asChild>
+            <Button
+              onClick={() => fetchOptions()}
+              className="float-right w-[10%] ml-3"
+              variant="outline"
+            >
+              <FontAwesomeIcon className="mr-1 size-4" icon={faFilter} />
+              Bộ Lọc
             </Button>
-          </DialogTrigger>
-        </Dialog>
+          </DrawerTrigger>
+          <DrawerContent className="h-[75%]">
+            <div className="mx-auto w-[100%]">
+              <DrawerHeader>
+                <DrawerTitle className="text-center">Lọc Dữ Liệu</DrawerTitle>
+                <DrawerDescription className="text-center">
+                  <i>(Không được để trống)</i>
+                </DrawerDescription>
+              </DrawerHeader>
+              <DrawerFooter className="flex flex-col items-center">
+                <form className="w-full flex flex-col items-center">
+                  <div className="flex gap-5 justify-center w-full">
+                    <div className="flex flex-col w-[45%] gap-5">
+                      <Select onValueChange={handleValueMaterialChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Chất Liệu" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {materialOptions.map((option) => (
+                            // eslint-disable-next-line react/jsx-key
+                            <SelectItem value={`${option.id}`}>
+                              {option.code}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select onValueChange={handleValueTypeChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Loại Giày" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {typeOptions.map((option) => (
+                            // eslint-disable-next-line react/jsx-key
+                            <SelectItem value={`${option.id}`}>
+                              {option.code}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select onValueChange={handleValueBrandChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Thương Hiệu" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {brandOptions.map((option) => (
+                            // eslint-disable-next-line react/jsx-key
+                            <SelectItem value={`${option.id}`}>
+                              {option.code}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col w-[45%] gap-5">
+                      <label className="text-center">
+                        <i>_Lọc Theo Khoảng Giá_</i>
+                      </label>
+                      <div className="flex w-[100%] gap-5">
+                        <Input
+                          type="number"
+                          placeholder="Từ"
+                          name="priceFrom"
+                          value={filterData.priceFrom}
+                          onChange={(e) =>
+                            setPostData({
+                              ...filterData,
+                              priceFrom: e.target.value,
+                            })
+                          }
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Đến"
+                          name="priceTo"
+                          value={filterData.priceTo}
+                          onChange={(e) =>
+                            setPostData({
+                              ...filterData,
+                              priceTo: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <Select onValueChange={handleValueSexChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Giới Tính" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Nam</SelectItem>
+                          <SelectItem value="2">Nữ</SelectItem>
+                          <SelectItem value="3">Tất Cả</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={getData}
+                    type="button"
+                    className="w-[25%] mt-5"
+                  >
+                    Lọc
+                  </Button>
+                </form>
+                <DrawerClose asChild>
+                  <Button className="w-[25%]" variant="outline">
+                    Thoát
+                  </Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
+        {/* End */}
+        <Button
+          onClick={() => clearFilter()}
+          className="float-right w-[10%] ml-3"
+          variant="outline"
+        >
+          <FontAwesomeIcon className="mr-1 size-4" icon={faXmark} />
+          Xóa Bộ Lọc
+        </Button>
       </div>
       <div className="rounded-md border">
         <Table>
