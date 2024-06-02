@@ -3,6 +3,7 @@ import homeAPI from '@/app/api/homeAPI';
 import Footer from '@/components/layouts/footer';
 import Header from '@/components/layouts/header';
 import { useEffect, useState } from 'react';
+import"../../../../../styles/productDetail.css"
 
 const ProductDetail = ({ params }) => {
     const [id, setID] = useState("");
@@ -64,36 +65,37 @@ const ProductDetail = ({ params }) => {
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-6">
-                            <div className="single-product-img tab-content">
-                                {data.pictures.map((picture, index) => (
-                                    <div
-                                        key={index}
-                                        className={`single-pro-main-image tab-pane ${index === 0 ? 'active' : ''}`}
-                                        id={`pro-large-img-${index + 1}`}
-                                    >
-                                        <a href="#">
-                                            <img
-                                                className="optima_zoom"
-                                                src={picture}
-                                                data-zoom-image={picture}
-                                                alt={`Product image ${index + 1}`}
-                                            />
-                                        </a>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="nav product-page-slider">
-                                {data.pictures.map((picture, index) => (
-                                    <div key={index} className="single-product-slider">
-                                        <a
+                            <div id="productCarousel" className="carousel slide" data-bs-ride="carousel">
+                                <div className="carousel-inner">
+                                    {data.pictures.map((picture, index) => (
+                                        <div key={index} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                                            <img className="d-block w-100" src={picture} alt={`Product image ${index + 1}`} />
+                                        </div>
+                                    ))}
+                                </div>
+                                <button className="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span className="visually-hidden">Previous</span>
+                                </button>
+                                <button className="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span className="visually-hidden">Next</span>
+                                </button>
+                                <div className="carousel-indicators">
+                                    {data.pictures.map((picture, index) => (
+                                        <button
+                                            key={index}
+                                            type="button"
+                                            data-bs-target="#productCarousel"
+                                            data-bs-slide-to={index}
                                             className={index === 0 ? 'active' : ''}
-                                            href={`#pro-large-img-${index + 1}`}
-                                            data-bs-toggle="tab"
+                                            aria-current={index === 0 ? 'true' : 'false'}
+                                            aria-label={`Slide ${index + 1}`}
                                         >
-                                            <img src={picture} alt={`Thumbnail ${index + 1}`} />
-                                        </a>
-                                    </div>
-                                ))}
+                                            <img className="d-block w-100" src={picture} alt={`Thumbnail ${index + 1}`} />
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                         <div className="col-lg-6">
@@ -124,13 +126,10 @@ const ProductDetail = ({ params }) => {
                                     </p>
                                 </div>
                                 <div className="item-price">
-                                    <span>{data.price} VNĐ</span>
+                                    <span>{data.price.toLocaleString()} VNĐ</span>
                                 </div>
                                 <div className="single-product-info">
                                     <p>{data.desc}</p>
-                                    <div className="share">
-                                        <img src="img/product/share.png" alt="Share" />
-                                    </div>
                                 </div>
                                 <div className="action">
                                     <ul className="add-to-links">
@@ -182,7 +181,7 @@ const ProductDetail = ({ params }) => {
                                 </div>
                                 <div className="cart-item">
                                     <div className="price-box">
-                                        <span>{data.price} VNĐ</span>
+                                        <span>{data.price.toLocaleString()} VNĐ</span>
                                     </div>
                                     <div className="single-cart">
                                         <div className="cart-plus-minus">
