@@ -64,7 +64,7 @@ export default function ProductNew() {
                                             <span>new</span>
                                         </div>
                                         <div className="product-img">
-                                            <a href="single-product.html">
+                                            <a href={`/product/${prod.id}`}>
                                                 <img
                                                     src={prod.pictures[0]}
                                                     alt=""
@@ -78,7 +78,7 @@ export default function ProductNew() {
                                             </a>
                                         </div>
                                         <div className="product-name">
-                                            <a href="single-product.html" title="Fusce aliquam">
+                                            <a href={`/product/${prod.id}`} title="Fusce aliquam">
                                             {prod.name}
                                             </a>
                                         </div>
