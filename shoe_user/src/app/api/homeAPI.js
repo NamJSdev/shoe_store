@@ -3,6 +3,7 @@ import axiosClient from "./axiosClient";
 class HomeAPI {
     urlConfig = `/shoes-store/v1/admin/code/list`;
     urlConfigUser = `/shoes-store/v1/user/shoes/list`;
+    urlDetailUser = `/shoes-store/v1/user/shoes/select`;
     getProduct = async (models) => {
         try {
             const formData = new FormData();
@@ -19,6 +20,29 @@ class HomeAPI {
             const config = {
                 // Thêm query params vào URL
                 url: `${this.urlConfigUser}?${urlParams.toString()}`,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'multipart/form-data', // Đảm bảo rằng bạn đang gửi formData
+                }
+            };
+            const response = await axiosClient(config);
+            return response;
+        } catch (error) {
+            // Xử lý lỗi ở đây
+            console.error("Error get models shoe:", error);
+            throw error; // Nếu bạn muốn chuyển lỗi ra ngoại vi để xử lý ở nơi khác
+        }
+    }
+    getProductDetail = async (id) => {
+        try {
+            const formData = new FormData();
+
+            formData.append('shoesId', id);
+            const urlParams = new URLSearchParams(formData);
+            
+            const config = {
+                // Thêm query params vào URL
+                url: `${this.urlDetailUser}?${urlParams.toString()}`,
                 method: 'GET',
                 headers: {
                     'Content-Type': 'multipart/form-data', // Đảm bảo rằng bạn đang gửi formData

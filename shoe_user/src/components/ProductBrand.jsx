@@ -80,7 +80,7 @@ export default function ProductBrand() {
                                 <span>best seller</span>
                             </div>
                             <div className="product-img">
-                                <a href="single-product.html">
+                                <a href={`/product/${prod.id}`}>
                                     <img src={prod.pictures[0]} className="primary-img" />
                                     <img src={prod.pictures[1]} className="secondary-img" />
                                 </a>
@@ -92,9 +92,9 @@ export default function ProductBrand() {
                             </div>
                             <div className="product-price">
                                 <div className="product-name">
-                                    <a href="single-product.html" title="Fusce aliquam">
+                                    <Link href={`/product/${prod.id}`}>
                                         {prod.name}
-                                    </a>
+                                    </Link>
                                 </div>
                                 <div className="price-rating">
                                     <span>{prod.price} VNĐ</span>
@@ -132,7 +132,7 @@ export default function ProductBrand() {
                                                     <span>hot</span>
                                                 </div>
                                                 <div className="product-img">
-                                                    <a href="single-product.html">
+                                                    <Link href={`/product/${prod.id}`}>
                                                         <img
                                                             src={prod.pictures[0]}
                                                             alt=""
@@ -143,7 +143,7 @@ export default function ProductBrand() {
                                                             alt=""
                                                             className="secondary-img"
                                                         />
-                                                    </a>
+                                                    </Link>
                                                 </div>
                                                 <div className="actions">
                                                     <button type="submit" className="cart-btn" title="Add to cart">
@@ -152,7 +152,7 @@ export default function ProductBrand() {
                                                 </div>
                                                 <div className="product-price">
                                                     <div className="product-name">
-                                                        <a href="single-product.html" title="Fusce aliquam">
+                                                        <a href={`/product/${prod.id}`} title="Fusce aliquam">
                                                             {prod.name}
                                                         </a>
                                                     </div>
