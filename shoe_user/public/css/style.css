@@ -3415,3 +3415,13 @@ button.check-button:hover,
 .panel-title {
     margin-bottom: 0;
 }
+.logo img{
+    width: 175px;
+    height: auto;
+}
+.cart-menu ul li a > span {
+    height: 15px;
+    width: 15px;
+    font-size: smaller;
+    line-height: 16px;
+}
